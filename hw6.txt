@@ -1,0 +1,326 @@
+600.426 - Programming Languages
+JHU Spring 2015
+Homework - 6 (50 Points)
+
+----------------------------------------------------------------------------------------
+HEADER: PLEASE FILL THIS IN
+----------------------------------------------------------------------------------------
+
+Name                  : Zhihao Cao
+List of team Members  : Jian Jin
+List of discussants   :
+
+--------------------------------------------------------------------------------------------------
+ Acting up
+--------------------------------------------------------------------------------------------------
+
+1a. In many concurrent applications it is necessary for groups of entities to broadcast
+    messages among themselves. Broadcasted messages are received by all members of the group.
+    For this question we will design a (rather simplistic) broadcast system within the actor
+    model.
+
+    Implementing broadcasting directly among a set of actors is not very scalable. The
+    actor model is based on explicit messaging between named actors. So broadcasting requires
+    each member of the group to be actively track the names of all actors currently in the
+    group and send messages to each one explicitly. This is somewhat painful. However there are
+    ways to simplify this.
+    
+    Consider the notion of a "Group" actor:
+      - A specific instance of the group actor represents a group of actors.
+      - Actors can register with a group by sending a `register message to the group actor.
+        The payload of the message is the actor name. Similarly you can unregister by sending
+        the `unregister message to the group (again with the actor name as payload)
+      - Group actors also handle a `broadcast message. The payload in this case is a message
+        to broadcast. When this message is received by the group actor, it forwards the message
+        (indicated by the payload) to each actor currently registered with the group.
+
+    Write out the AFbV code for the Group actor. 
+    
+    You can use the template below and fill in the answer. Feel free to tweak the template if you
+    feel like it; some helper functions may be useful for example. As long as the actor does what
+    it is supposed to do, it should be fine.
+    
+    Note that to use the template in eclipse, you need the binary version of the FbDK and a copy of the
+    fbdktoploop.ml from the AFbv directory of the FbDK source. Switch to the directory where the library
+    files in the binary are and start a toploop. Then load the above fbdktoploop.ml file and you should
+    be set to go.
+
+    [20 Points]
+
+let expr = parse "
+   Let ycomb = (
+      Function body -> Let wrapper = Function this -> Function arg -> body (this this) arg In 
+      Function arg -> wrapper wrapper arg
+    ) In
+    Let add_element = ycomb (
+      Function this -> Function lst -> Function e -> 
+        If lst = [] Then
+          [e]
+        Else If (Head lst) = e Then
+          this (Tail lst) e
+        Else
+          (Head lst) :: (this (Tail lst) e)
+    ) In
+    Let delete_element = ycomb (
+      Function this -> Function lst -> Function e -> 
+        If lst = [] Then
+          []
+        Else If (Head lst) = e Then
+          this (Tail lst) e
+        Else
+          (Head lst) :: (this (Tail lst) e)
+    ) In
+    Let broadcast_msg = ycomb (
+      Function this -> Function lst -> Function msg ->
+        If lst = [] Then
+          msg
+        Else
+          (Head lst) <- msg;
+          this (Tail lst) msg
+    ) In
+    Let group = 
+      Function myaddr -> ycomb (
+      Function this -> Function localdata -> Function msg ->
+        Match msg With
+          `register name -> this (add_element localdata name)
+        | `unregister name -> this (delete_element localdata name)
+        | `broadcast m -> 
+            broadcast_msg localdata m;
+            this localdata
+      )
+    In
+    Let printer = Function myaddr -> ycomb (
+      Function this -> Function localdata -> Function msg ->
+        Match msg With
+        `message t -> (Print \"---> \"); (Print t); (Print \"\n\") ; (this localdata)
+    ) In
+    Let a_group = Create(group, []) In 
+    Let a1 = Create(printer, 0) In
+    Let a2 = Create(printer, 0) In
+    (a_group <- `register a1) ; (a_group <- `register a2) ;
+    (a_group <- `broadcast (`message \"Hello\"))
+" ;;
+
+# ppeval expr ;;
+
+(*
+==> ---> Hello
+---> Hello
+`broadcast(`message(Hello))
+- : unit = ()
+*)
+
+1b. Let us use the implementation above to build a simple chat room system.
+ 
+    The primary components of the system are
+    - A "Server" actor. This is a singleton instance that is usually created at start.
+    - Chat Rooms instances. Chat rooms have (string) names. Messages sent to the room are seen by
+      all clients connected to the room. (Hint: A chat room is easily implemented with a Group actor
+      from above)
+    - "Client" actor instances. Clients are connected to a specific chat room (in our scenario) on
+      the server and can send and receive messages to the chat room.
+
+
+    The Server accepts three messages `connect, `disconnect and `message.
+    - The payload for `connect is a pair consisting of the name of the room and the address of the
+      client. If the specified room does not exist yet, the server creates the room. It then
+      generates a 'token' and sends a `registered message to the client actor with the token as the
+      payload.  The token indicates that the particular client has registered with the particular
+      chat room. Its exact datatype is up to you. It will be used as a parameter in other messages
+      the server receives. 
+    - The `disconnect message takes the token (from the registration scenario above) as payload and
+      disassociates the client from the room.
+    - The payload for `message is a pair consisting of the token and the text message to send. The
+      server uses the token to discover which chat room the message should be sent to. It then sends
+      a `receive message (with the text message as payload) to all registered clients of the
+      specific chat room.
+
+    A Client actor accepts 4 messages - `initialize, `registered, `send and `receive:
+    - `initialize takes as payload a pair consisting of the name of a server actor and a channel to connect 
+      to. On receiveing this message, the client must register with the server for the specific channel name.
+    - For `registered, the payload is a token as indicated above. This will need to be stored and used 
+      for future communication.
+    - `send takes a text message as payload and broadcasts it to the chat room.
+    - `receive has a payload consisting of a text message. For the current implementation, simply
+      print out the message.
+
+    Write out the AFbV code for the Server and Client actors.
+
+    [20 Points]
+
+let expr = parse "
+   Let ycomb = (
+      Function body -> Let wrapper = Function this -> Function arg -> body (this this) arg In 
+      Function arg -> wrapper wrapper arg
+    ) In
+    Let add_element = ycomb (
+      Function this -> Function lst -> Function e -> 
+        If lst = [] Then
+          [e]
+        Else If (Head lst) = e Then
+          this (Tail lst) e
+        Else
+          (Head lst) :: (this (Tail lst) e)
+    ) In
+    Let delete_element = ycomb (
+      Function this -> Function lst -> Function e -> 
+        If lst = [] Then
+          []
+        Else If (Head lst) = e Then
+          this (Tail lst) e
+        Else
+          (Head lst) :: (this (Tail lst) e)
+    ) In
+    Let broadcast_msg = ycomb (
+      Function this -> Function lst -> Function msg ->
+        If lst = [] Then
+          msg
+        Else
+          (Head lst) <- msg;
+          this (Tail lst) msg
+    ) In
+    Let group = 
+      Function myaddr -> ycomb (
+      Function this -> Function localdata -> Function msg ->
+        Match msg With
+          `register name -> this (add_element localdata name)
+        | `unregister name -> this (delete_element localdata name)
+        | `broadcast m -> 
+            broadcast_msg localdata m;
+            this localdata
+      )
+    In
+
+    Let contains = ycomb (
+      Function this -> Function lst -> Function name ->
+        If lst = [] Then
+          False
+        Else If (Fst (Head lst)) = name Then
+          True
+        Else
+          this (Tail lst) name
+    ) In
+    Let get_address = ycomb (
+      Function this -> Function lst -> Function name ->
+        If (Fst (Head lst)) = name Then
+          Snd (Head lst)
+        Else
+          this (Tail lst) name
+    ) In
+
+    Let server = 
+      Function myaddr -> ycomb (
+        Function this -> Function localdata -> Function msg ->
+          Match msg With
+            `connect pair ->
+            Let room_name = Fst pair In
+            Let client_addr = Snd pair In
+            Let token = (myaddr, pair) In
+            If (contains localdata room_name) Then 
+              Let room_addr = get_address localdata room_name In
+              (client_addr <- `registered token);
+              (room_addr <- `register client_addr);
+              (this localdata)
+            Else
+              Let room_addr = Create (group, [client_addr]) In
+              (client_addr <- `registered token);
+              (this ((room_name, room_addr) :: localdata))
+
+          | `disconnect token ->
+            Let room_name = Fst (Snd token) In
+            Let room_addr = get_address localdata room_name In
+            Let client_addr = Snd (Snd token) In
+            (room_addr <- `unregister client_addr);
+            (this localdata)
+
+          | `message pair ->
+            Let token = Fst pair In
+            Let m = Snd pair In
+            Let room_name = Fst (Snd token) In
+            Let room_addr = get_address localdata room_name In
+            (room_addr <- `broadcast (`receive m));
+            (this localdata)
+      )
+    In
+    Let client =     
+      Function myaddr -> ycomb (
+        Function this -> Function localdata -> Function msg ->
+          Match msg With
+            `initialize pair ->
+            Let server_addr = Fst pair In
+            Let room_name = Snd pair In
+            Let connect_pair = (room_name, myaddr) In
+            (server_addr <- `connect connect_pair);
+            (this localdata)
+
+          | `registered token ->
+            (this token)
+          | `send m -> 
+            Let server_addr = Fst localdata In
+            Let msg_pair = (localdata, m) In
+            (server_addr <- `message msg_pair);
+            (this localdata)
+
+          | `receive m ->
+            (Print myaddr);
+            (Print \" ---> \");
+            (Print m);
+            (Print \"\n\");
+            (this localdata)
+        )
+    In
+    Let a_server = Create(server, []) In         
+    Let a_client1 = Create(client, 0) In        
+    Let a_client2 = Create(client, 0) In         
+    (a_client1 <- `initialize (a_server, \"Foo\")) ;
+    (a_client2 <- `initialize (a_server, \"Foo\")) ;
+    (a_client1 <- `send \"Hello\")
+" ;; 
+
+ppeval expr ;;
+
+(*
+==> A3 ---> Hello
+A2 ---> Hello`send(Hello)
+- : unit = ()
+*)
+
+1c. For this question we will explore the operational semantics of the Actor system in some detail.
+
+    Suppose the current state of the chat room system above is: 
+      G = { <a_server, ...>, <a_c1, ...>, <a_c2, ...>} U { }
+    where a_server is a Server instance and a_c1 and a_c2 are two client actors.
+
+    The users do the following:
+    - a_c1 connects to ChatRoom "Company"
+    - After a_c1 connects, a_c2 connects to the same chat room
+    - a_c1 sends "Hello World" to that chat room
+
+    Specify in sequence the messages that will be sent by the system and at each step write out the
+    global state as the corresponding Send operation finishes.
+
+    [10 Points]
+
+
+
+    - a_c1 connects to ChatRoom "Company":
+    messages sent:    {[a_c1 <- `initialize (a_server, "Company")]} U {[a_server <- `connect ("Company", a_c1)]}
+                    U {[a_group <- `register a_c1]} U {[a_c1 <- `registered (token1)]}
+    global state:     {<a_server, [("Company", a_group)]>, <a_c1, token1>, <a_c2, 0>, <a_group, [a_c1]>}
+
+    - After a_c1 connects, a_c2 connects to the same chat room:
+    messages sent:    {[a_c2 <- `initialize (a_server, "Company")]} U {[a_server <- `connect ("Company", a_c2)]}
+                    U {[a_group <- `register a_c2]} U {[a_c2 <- `registered (token2)]}
+    global state:     {<a_server, [("Company", a_group)]>, <a_c1, token1>, <a_c2, token2>, <a_group, [a_c1, a_c2]>}
+
+    - a_c1 sends "Hello World" to that chat room:
+    messages sent:    {[a_c1 <- `send ("Hello World")]} U {[a_server <- `message (token1, "Hello World")]}
+                    U {[a_group <- `broadcast (`receive ("Hello World"))]} U {[a_c1 <- `receive ("Hello World")]}
+                    U {[a_c2 <- `receive ("Hello World")]}
+    global state:     {<a_server, [("Company", a_group)]>, <a_c1, token1>, <a_c2, token2>, <a_group, [a_c1, a_c2]>}
+
+    (Actually the behavior of an actor should be "this localdata", where "this" should be its entire program. For simplicity, I use its localdata to represent its bahavior here.)
+
+
+
+   
