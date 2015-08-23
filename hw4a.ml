@@ -6,8 +6,8 @@ Homework 4 Part 1 (40 points)
 HEADER: PLEASE FILL THIS IN
 --------------------------------------------------------------------------------------------------
 
-Name                  :	Zhihao Cao
-List of team Members  :	Hefeng Sun
+Name                  : Zhihao Cao
+List of team Members  : Hefeng Sun
 List of discussants   :
 
 --------------------------------------------------------------------------------------------------
@@ -84,124 +84,124 @@ List of discussants   :
    Given a list of macros and a program as an ast, write an Ocaml function to return an ast with all the macros 
    expanded.
 *)     
-																					
-exception Failure;; 	
+                                                                                    
+exception Failure;;     
 
 let subst1 e v x =
-	let rec sub e =
-		match e with
-			Not e -> Not (sub e)
-		|	And (e1, e2) -> And (sub e1, sub e2)
-		|	Or (e1, e2) -> Or (sub e1, sub e2)	
-		|	Plus (e1, e2) -> Plus (sub e1, sub e2)
-		|	Minus (e1, e2) -> Minus (sub e1, sub e2)
-		| Equal (e1, e2) -> Equal (sub e1, sub e2)
-		| If (e1, e2, e3) -> If (sub e1, sub e2, sub e3)
-		| Appl (e1, e2) -> Appl (sub e1, sub e2)
-		| Int e -> Int e
-		| Bool e -> Bool e
-		| Function (ident, expr) ->
+    let rec sub e =
+        match e with
+            Not e -> Not (sub e)
+        |   And (e1, e2) -> And (sub e1, sub e2)
+        |   Or (e1, e2) -> Or (sub e1, sub e2)  
+        |   Plus (e1, e2) -> Plus (sub e1, sub e2)
+        |   Minus (e1, e2) -> Minus (sub e1, sub e2)
+        | Equal (e1, e2) -> Equal (sub e1, sub e2)
+        | If (e1, e2, e3) -> If (sub e1, sub e2, sub e3)
+        | Appl (e1, e2) -> Appl (sub e1, sub e2)
+        | Int e -> Int e
+        | Bool e -> Bool e
+        | Function (ident, expr) ->
 
-				if ident = x then 
-				(	match v with
-						Var i -> Function(i, sub expr)
-					|	_ -> e  )
-				else
-					Function(ident, sub expr) 
-		
-		|	LetRec (f, xx, e1, e2) ->
-				if f = x then
-					e
-				else if xx = x then
-					LetRec (f, xx, e1, sub e2)
-				else
-					LetRec (f, xx, sub e1, sub e2)
-		
-		|	Var ident ->
-				if ident = x then
-					v
-				else
-					e
-					
-	in sub e
-;;																																		
-	
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										
+                if ident = x then 
+                (   match v with
+                        Var i -> Function(i, sub expr)
+                    |   _ -> e  )
+                else
+                    Function(ident, sub expr) 
+        
+        |   LetRec (f, xx, e1, e2) ->
+                if f = x then
+                    e
+                else if xx = x then
+                    LetRec (f, xx, e1, sub e2)
+                else
+                    LetRec (f, xx, sub e1, sub e2)
+        
+        |   Var ident ->
+                if ident = x then
+                    v
+                else
+                    e
+                    
+    in sub e
+;;                                                                                                                                      
+    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 let rec findMacros macros ident arity = match macros with
-																	[] -> (Ident "notFound", 0, Int 0)
-																| hd :: tl ->
-																		let (n, a, c) = hd in
-																			if Var(n) = ident && a - 1 = arity || Var(n) = ident && a = 0 && arity = 0  then
-																				hd
-																			else
-																				findMacros tl ident arity
+                                                                    [] -> (Ident "notFound", 0, Int 0)
+                                                                | hd :: tl ->
+                                                                        let (n, a, c) = hd in
+                                                                            if Var(n) = ident && a - 1 = arity || Var(n) = ident && a = 0 && arity = 0  then
+                                                                                hd
+                                                                            else
+                                                                                findMacros tl ident arity
 ;;
 
 let rec substitute code valueList identList length = 
-						if length = 0 then
-							code
-						else
-							substitute (subst1 code (List.nth valueList (length - 1)) (  List.nth identList (length - 1)  ) ) valueList identList (length - 1)
+                        if length = 0 then
+                            code
+                        else
+                            substitute (subst1 code (List.nth valueList (length - 1)) (  List.nth identList (length - 1)  ) ) valueList identList (length - 1)
 ;;
 
-let rec alignValue macro valueList identList =	let (n, length, code) = macro in
-																						match code with
-																							Function (ident, expr) -> 
-																								if length = 0 then
-																									Function(ident, alignValue (n, length, expr) valueList identList)
-																								else
-																									alignValue (n, (length-1), expr) valueList ( identList @ [ident])
-																						| e ->
-																								substitute code valueList identList (List.length valueList)
-;;																			
+let rec alignValue macro valueList identList =  let (n, length, code) = macro in
+                                                                                        match code with
+                                                                                            Function (ident, expr) -> 
+                                                                                                if length = 0 then
+                                                                                                    Function(ident, alignValue (n, length, expr) valueList identList)
+                                                                                                else
+                                                                                                    alignValue (n, (length-1), expr) valueList ( identList @ [ident])
+                                                                                        | e ->
+                                                                                                substitute code valueList identList (List.length valueList)
+;;                                                                          
 
 
-	
+    
 let rec traverseProgram macros program = 
-																						match program with
-																							Not e -> Not (traverseProgram macros e)
-                                            |	And (e1, e2) -> And (traverseProgram macros e1, traverseProgram macros e2)
-                                            |	Or (e1, e2) -> Or (traverseProgram macros e1, traverseProgram macros e2)
-                                            |	Plus (e1, e2) -> Plus (traverseProgram macros e1, traverseProgram macros e2)
+                                                                                        match program with
+                                                                                            Not e -> Not (traverseProgram macros e)
+                                            |   And (e1, e2) -> And (traverseProgram macros e1, traverseProgram macros e2)
+                                            |   Or (e1, e2) -> Or (traverseProgram macros e1, traverseProgram macros e2)
+                                            |   Plus (e1, e2) -> Plus (traverseProgram macros e1, traverseProgram macros e2)
                                             | Minus (e1, e2) -> Minus (traverseProgram macros e1, traverseProgram macros e2)
                                             | Equal (e1, e2) -> Equal (traverseProgram macros e1, traverseProgram macros e2)
                                             | If (e1, e2, e3) -> If (traverseProgram macros e1, traverseProgram macros e2, traverseProgram macros e3)
                                             | Int e -> Int e
                                             | Bool e -> Bool e
                                             | Function (ident, expr) ->
-                                              	Function (ident, traverseProgram macros expr)	 
-                                            |	LetRec (f, xx, e1, e2) ->
-                                              	LetRec (f, xx, traverseProgram macros e1, traverseProgram macros e2)
-                                            |	Var ident ->
-              																	let (n, a, c) = findMacros macros program 0 in
-																										if n <> (Ident "notFound") then
-																											traverseProgram macros c
-																										else
-																											program
-              															| Appl (e1, e2) -> 
-              																	substMacro macros program
-																								
+                                                Function (ident, traverseProgram macros expr)    
+                                            |   LetRec (f, xx, e1, e2) ->
+                                                LetRec (f, xx, traverseProgram macros e1, traverseProgram macros e2)
+                                            |   Var ident ->
+                                                                                let (n, a, c) = findMacros macros program 0 in
+                                                                                                        if n <> (Ident "notFound") then
+                                                                                                            traverseProgram macros c
+                                                                                                        else
+                                                                                                            program
+                                                                        | Appl (e1, e2) -> 
+                                                                                substMacro macros program
+                                                                                                
 and
 
 substMacro macros oprogram = 
 let rec sub macros program arity valueList = match program with
-																								Appl (e1, e2) ->
-																									let (n, a, c) = findMacros macros e1 arity in
-																										if n <> (Ident "notFound") then
-																											traverseProgram macros (alignValue (n, a, c) ((e2) :: valueList) []) 
-																										else
-																											sub macros e1 (arity + 1) ((e2) :: valueList) 
+                                                                                                Appl (e1, e2) ->
+                                                                                                    let (n, a, c) = findMacros macros e1 arity in
+                                                                                                        if n <> (Ident "notFound") then
+                                                                                                            traverseProgram macros (alignValue (n, a, c) ((e2) :: valueList) []) 
+                                                                                                        else
+                                                                                                            sub macros e1 (arity + 1) ((e2) :: valueList) 
 
-																											
-																							|	_ -> match oprogram with
-																									Appl(e1, e2) -> Appl(traverseProgram macros e1, traverseProgram macros e2)
-																									|	_ -> raise Failure
+                                                                                                            
+                                                                                            |   _ -> match oprogram with
+                                                                                                    Appl(e1, e2) -> Appl(traverseProgram macros e1, traverseProgram macros e2)
+                                                                                                    |   _ -> raise Failure
 in
-sub macros oprogram 0 []																				
+sub macros oprogram 0 []                                                                                
 ;;
 
 let expand macros program =  traverseProgram macros program ;;
-																																																																													
+                                                                                                                                                                                                                                                                                                                    
 
 let expand_eval macros program = eval  ( expand macros program ) ;;
 
@@ -277,37 +277,37 @@ let code_6 = parse "let x 10 (let y 2 (x+y))" ;;
    Note: e1 and e2 are arbitrary expressions; x and y are variables.
 
    a. (Function y -> Not y) False =~ True 
-		
-		Yes. 
-	
-	
+        
+        Yes. 
+    
+    
    b. x + x =~ x + x + x - x
   
-		Yes.	
-		
-	
+        Yes.    
+        
+    
    c. Function x -> x + y =~ Function y -> y + x
-  	
-		No.
-		Let C = def (Function y -> *) 1 2
-		C[Function x -> x + y] = (Function y -> (Function x -> x + y)) 1 2 = 3
-		C[Function y -> y + x] = (Function y -> (Function y -> y + x)) 1 2 will raise exception, so it can't be evaluated
-		Therefore they are not operational equivalance.
+    
+        No.
+        Let C = def (Function y -> *) 1 2
+        C[Function x -> x + y] = (Function y -> (Function x -> x + y)) 1 2 = 3
+        C[Function y -> y + x] = (Function y -> (Function y -> y + x)) 1 2 will raise exception, so it can't be evaluated
+        Therefore they are not operational equivalance.
 
-				
+                
    d. Function x -> Function y -> x y =~ Function y -> Function x -> y x
   
-		Yes. 
+        Yes. 
 
-		
+        
    e. (Function z -> y) x =~ y
   
-		No.
-		Let C = def (Function y -> * ) 1
-		C[(Function z -> y) x] = (Function y -> ( (Function z -> y) x ) ) 1 will raise exception, so it can't be evaluated
-		C[y] = (Function y -> y ) 1 = 1
-		Therefore they are not operational equivalance.
-		
+        No.
+        Let C = def (Function y -> * ) 1
+        C[(Function z -> y) x] = (Function y -> ( (Function z -> y) x ) ) 1 will raise exception, so it can't be evaluated
+        C[y] = (Function y -> y ) 1 = 1
+        Therefore they are not operational equivalance.
+        
 
 --------------------------------------------------------------------------------------------------
   Operational Semantics
@@ -328,52 +328,52 @@ let code_6 = parse "let x 10 (let y 2 (x+y))" ;;
          added to standard Fb rules. 
 
     [10 Points]
-		
-		1. 	v ::= ... | [[ ]] | [v; ...; v]   
-				e ::= ... | [e; ...; e] | e ++ e | (Match e With [[ ]] -> e | (x ++ x) -> e)
-		
-		2.			
-		
-		e_1 => v_1  ... e_n => v_n
-		----------------------------------
-		[e_1; ...; e_n] => [v_1; ...; v_n]
-		
-		
-		
-					e1 => [v_11; ...; v_1m]  e2 => [v_21; ...; v_2n]
-					-------------------------------------------------
-						e1 ++ e2 => [v_11; ...; v_1m; v_21; ...; v_2n]
+        
+        1.  v ::= ... | [[ ]] | [v; ...; v]   
+                e ::= ... | [e; ...; e] | e ++ e | (Match e With [[ ]] -> e | (x ++ x) -> e)
+        
+        2.          
+        
+        e_1 => v_1  ... e_n => v_n
+        ----------------------------------
+        [e_1; ...; e_n] => [v_1; ...; v_n]
+        
+        
+        
+                    e1 => [v_11; ...; v_1m]  e2 => [v_21; ...; v_2n]
+                    -------------------------------------------------
+                        e1 ++ e2 => [v_11; ...; v_1m; v_21; ...; v_2n]
 
-						
-				e1 => [[ ]]  e2 => [v_21; ...; v_2n]
-				------------------------------------														
-						e1 ++ e2 => [v_21; ...; v_2n]
-						
-					
-				e1 => [v_11; ...; v_1m]   e2 => [[ ]]
-				--------------------------------------													
-						e1 ++ e2 => [v_11; ...; v_1m]
-																								
-																								
-				e1 => [[ ]]   e2 => [[ ]]
-				--------------------------																																								
-					  e1 ++ e2 => [[ ]]							
-						
-																														
-			
-							 e => [[ ]]   e1 => v
-		----------------------------------------------
-		Match e With [[ ]] -> e1 | (h ++ t) -> e2 => v
-		
-		
-			e => [v_1; ...; v_m]   (e2[v_1/h])[[v_2; ...; v_m]/t] => v 
-		--------------------------------------------------------------------------- 
-							Match e With [[ ]] -> e1 | (h ++ t) -> e2 => v
-							
-							
-					           e => [v_1]   (e2[v_1/h])[( [[ ]] )/t] => v 
-		---------------------------------------------------------------------------
-							Match e With [[ ]] -> e1 | (h ++ t) -> e2 => v
+                        
+                e1 => [[ ]]  e2 => [v_21; ...; v_2n]
+                ------------------------------------                                                        
+                        e1 ++ e2 => [v_21; ...; v_2n]
+                        
+                    
+                e1 => [v_11; ...; v_1m]   e2 => [[ ]]
+                --------------------------------------                                                  
+                        e1 ++ e2 => [v_11; ...; v_1m]
+                                                                                                
+                                                                                                
+                e1 => [[ ]]   e2 => [[ ]]
+                --------------------------                                                                                                                                                              
+                      e1 ++ e2 => [[ ]]                         
+                        
+                                                                                                                        
+            
+                             e => [[ ]]   e1 => v
+        ----------------------------------------------
+        Match e With [[ ]] -> e1 | (h ++ t) -> e2 => v
+        
+        
+            e => [v_1; ...; v_m]   (e2[v_1/h])[[v_2; ...; v_m]/t] => v 
+        --------------------------------------------------------------------------- 
+                            Match e With [[ ]] -> e1 | (h ++ t) -> e2 => v
+                            
+                            
+                               e => [v_1]   (e2[v_1/h])[( [[ ]] )/t] => v 
+        ---------------------------------------------------------------------------
+                            Match e With [[ ]] -> e1 | (h ++ t) -> e2 => v
 
 
 

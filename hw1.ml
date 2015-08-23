@@ -28,8 +28,8 @@
 
 (*
  
-  Name                        :	Zhihao Cao
-  List of team Members        :	Hefeng Sun
+  Name                        : Zhihao Cao
+  List of team Members        : Hefeng Sun
   List of other collaborators :
 
 *) 
@@ -46,9 +46,9 @@
 *)
 
 let rec initial lst = match lst with
-											[] -> []
-										|	hd :: [] -> []
-										| hd :: tl -> hd :: initial tl;;
+                      [] -> []
+                    | hd :: [] -> []
+                    | hd :: tl -> hd :: initial tl;;
 
 (*
 # initial ["Foo"; "Bar"; "Baz"] ;;
@@ -69,15 +69,15 @@ let rec initial lst = match lst with
 *)
 
 let rec split n lst = match lst with
-											[] -> ([], [])
-										|	hd :: tl -> 
-											let (l1, l2) = split (n - 1) tl in
-											if n > 0 then
-												(hd :: l1, l2)
-											else
-												(l1, hd :: l2)
+                      [] -> ([], [])
+                    | hd :: tl -> 
+                      let (l1, l2) = split (n - 1) tl in
+                      if n > 0 then
+                        (hd :: l1, l2)
+                      else
+                        (l1, hd :: l2)
 ;;
-										
+                    
    
 (*
 # split 3 [1;2;3;4;5;6;7;8;9] ;;
@@ -94,27 +94,27 @@ let rec split n lst = match lst with
 
 
 let rec contains x lst = match lst with
-												 	[] -> false
-												|	hd :: tl ->
-														x = hd || contains x tl
+                          [] -> false
+                        | hd :: tl ->
+                            x = hd || contains x tl
 ;;
 
 let rec rev lst = 
   match lst with
-  	[] -> []
+    [] -> []
   | hd :: tl -> rev tl @ [hd]
 ;;
 
 let rec remove_duplicates lst = match (rev lst) with
-																[] -> [] 	
-															| hd :: tl ->
-																let l = remove_duplicates (rev tl) in
-																if not (contains hd l) then
-																	l @ [hd]
-																else
-																	l																
+                                [] -> []  
+                              | hd :: tl ->
+                                let l = remove_duplicates (rev tl) in
+                                if not (contains hd l) then
+                                  l @ [hd]
+                                else
+                                  l                               
 ;;
-			
+      
 (*
 # remove_duplicates [1;3;2;4;3;1;5]  ;;
 - : int list = [1; 3; 2; 4; 5]
@@ -134,11 +134,11 @@ let rec remove_duplicates lst = match (rev lst) with
 *)
 
 let rec combine_with f lst1 lst2 = match (lst1, lst2) with
-																		([], []) -> []
-																	|	([], _) -> invalid_arg "The input lists have different size!"
-																	| (_, []) -> invalid_arg "The input lists have different size!"
-																	|	(hd1 :: tl1, hd2 :: tl2) ->
-																		(f hd1 hd2) :: (combine_with f tl1 tl2)
+                                    ([], []) -> []
+                                  | ([], _) -> invalid_arg "The input lists have different size!"
+                                  | (_, []) -> invalid_arg "The input lists have different size!"
+                                  | (hd1 :: tl1, hd2 :: tl2) ->
+                                    (f hd1 hd2) :: (combine_with f tl1 tl2)
 ;;
 
 
@@ -173,12 +173,12 @@ let rec combine_with f lst1 lst2 = match (lst1, lst2) with
 *)
 
 let rec list_comprehension source pred compute = match source with
-																									[] -> []
-																								|	hd :: tl ->
-																									if pred hd then
-																										(compute hd) :: (list_comprehension tl pred compute)
-																									else
-																										list_comprehension tl pred compute
+                                                  [] -> []
+                                                | hd :: tl ->
+                                                  if pred hd then
+                                                    (compute hd) :: (list_comprehension tl pred compute)
+                                                  else
+                                                    list_comprehension tl pred compute
 ;;
 
 
@@ -209,15 +209,15 @@ val range : int -> int list = <fun>
 type comparison_result = LT | EQ | GT ;;
 
 let rec partition compare_fn lst pivot = match lst with
-																					[] -> ([], [], [])
-																				|	hd :: tl ->
-																					let (llst, elst, glst) = partition compare_fn tl pivot in
-																					if compare_fn hd pivot = LT then
-																						(hd :: llst, elst, glst)
-																					else if compare_fn hd pivot = EQ then
-																						(llst, hd :: elst, glst)
-																					else
-																						(llst, elst, hd :: glst)
+                                          [] -> ([], [], [])
+                                        | hd :: tl ->
+                                          let (llst, elst, glst) = partition compare_fn tl pivot in
+                                          if compare_fn hd pivot = LT then
+                                            (hd :: llst, elst, glst)
+                                          else if compare_fn hd pivot = EQ then
+                                            (llst, hd :: elst, glst)
+                                          else
+                                            (llst, elst, hd :: glst)
 ;;
 
 
@@ -229,20 +229,20 @@ let rec partition compare_fn lst pivot = match lst with
 *)
 
 let rec quicksort compare_fn lst = match lst with
-																		[] -> []
-																	|	hd :: tl ->
-																		let (llst, elst, glst) = partition compare_fn tl hd in
-																		if elst = [] then
-																			(quicksort compare_fn llst) @ (hd :: quicksort compare_fn glst)
-																		else
-																			(quicksort compare_fn llst) @ (elst @ quicksort compare_fn glst)
+                                    [] -> []
+                                  | hd :: tl ->
+                                    let (llst, elst, glst) = partition compare_fn tl hd in
+                                    if elst = [] then
+                                      (quicksort compare_fn llst) @ (hd :: quicksort compare_fn glst)
+                                    else
+                                      (quicksort compare_fn llst) @ (elst @ quicksort compare_fn glst)
 ;;
 
 let rec quicksort compare_fn lst = match lst with
-																		[] -> []
-																	|	hd :: tl ->
-																		let (llst, elst, glst) = partition compare_fn tl hd in
-																			(quicksort compare_fn (llst @ elst)) @ (hd :: quicksort compare_fn glst)
+                                    [] -> []
+                                  | hd :: tl ->
+                                    let (llst, elst, glst) = partition compare_fn tl hd in
+                                      (quicksort compare_fn (llst @ elst)) @ (hd :: quicksort compare_fn glst)
 ;;
 
 (*
@@ -275,16 +275,16 @@ let rec quicksort compare_fn lst = match lst with
 *)
 
 let diff x1 x2 = let (a1, b1) = x1 in
-									let (a2, b2) = x2 in
-										(b2 -. b1) /. (a2 -. a1)
-;;	
+                  let (a2, b2) = x2 in
+                    (b2 -. b1) /. (a2 -. a1)
+;;  
 
 let rec differentiate lst = match lst with
-														[] -> []
-													| hd :: [] -> []
-													|	hd1 :: hd2 :: tl -> 
-														diff hd1 hd2 :: differentiate (hd2 :: tl) 
-;;												
+                            [] -> []
+                          | hd :: [] -> []
+                          | hd1 :: hd2 :: tl -> 
+                            diff hd1 hd2 :: differentiate (hd2 :: tl) 
+;;                        
 
 
 (*
@@ -305,15 +305,15 @@ let rec differentiate lst = match lst with
 *)
 
 let area x1 x2 = let (a1, b1) = x1 in
-									let (a2, b2) = x2 in
-										0.5 *. (a2 -. a1) *. (b2 +. b1)
-;;	
+                  let (a2, b2) = x2 in
+                    0.5 *. (a2 -. a1) *. (b2 +. b1)
+;;  
 
 let rec integrate lst = match lst with
-												[] -> 0.
-											|	hd :: [] -> 0.
-											| hd1 :: hd2 :: tl ->
-												area hd1 hd2 +. integrate (hd2 :: tl)
+                        [] -> 0.
+                      | hd :: [] -> 0.
+                      | hd1 :: hd2 :: tl ->
+                        area hd1 hd2 +. integrate (hd2 :: tl)
 ;;
 
 
@@ -334,10 +334,10 @@ let rec integrate lst = match lst with
   For this question we will build a simple sudoku checker. The final goal is to write a function that
   when presented with a sudoku grid, returns whether it has been solved or not. In case you are not familiar
   with the puzzle, you can read about it here: https://en.wikipedia.org/wiki/Sudoku. 
-	
+  
   A filled grid looks like this (courtesy wikipedia): 
   https://en.wikipedia.org/wiki/Sudoku#mediaviewer/File:Sudoku-by-L2G-20050714_solution.svg
-	
+  
   To verify a grid, we have to check that each row, each column and each of the (bolded) 3x3 regions are 
   some permutation of the sequence 1, 2, ..., 9. We will build the machinery for this piece-by-piece
   
@@ -366,25 +366,25 @@ let rec integrate lst = match lst with
   4a. With the list-of-lists arrangement, it is easy to access rows from the grid. Columns are a bit harder. For
       this question, write a function that when given a column index (zero-based) and a grid, extracts the specific 
       column. 
-			
+      
       [8 Points]
 *)
 
 exception Failure;;
 
 let rec nth l n = match l with
-    							[] -> raise Failure
-  							| hd :: tl -> 
-      						if n = 0 then	
-        						hd
-     							else
-       							nth tl (n - 1)
+                  [] -> raise Failure
+                | hd :: tl -> 
+                  if n = 0 then 
+                    hd
+                  else
+                    nth tl (n - 1)
 ;;
 
 let rec fetch_column grid col = match grid with
-																[] -> []
-															| hd :: tl ->
-																nth hd col :: fetch_column tl col
+                                [] -> []
+                              | hd :: tl ->
+                                nth hd col :: fetch_column tl col
 ;;
 
 (*
@@ -402,29 +402,29 @@ let rec fetch_column grid col = match grid with
 *)
 
 let rec extract a b lst = match lst with
-											[] -> []
-										|	hd :: tl -> 
-											let l = extract (a - 1) (b - 1) tl in
-											if a <= 0 && b > 0  then
-												hd :: l
-											else
-												l
-;;	
+                      [] -> []
+                    | hd :: tl -> 
+                      let l = extract (a - 1) (b - 1) tl in
+                      if a <= 0 && b > 0  then
+                        hd :: l
+                      else
+                        l
+;;  
 
 let rec fetch_grid grid start_row start_col row_count col_count =
-	if (start_row + row_count) > 9 || (start_col + col_count) > 9 then
-		raise Failure
-	else
-  	match grid with
-  		[] -> []
-  	| hd :: tl ->
-  		let l = fetch_grid tl (start_row - 1) start_col row_count col_count in
-  		if start_row <= 0 && (start_row + row_count) > 0 then
-  			extract start_col (start_col + col_count) hd @ l
-  		else
-  			l
+  if (start_row + row_count) > 9 || (start_col + col_count) > 9 then
+    raise Failure
+  else
+    match grid with
+      [] -> []
+    | hd :: tl ->
+      let l = fetch_grid tl (start_row - 1) start_col row_count col_count in
+      if start_row <= 0 && (start_row + row_count) > 0 then
+        extract start_col (start_col + col_count) hd @ l
+      else
+        l
 ;;
-		
+    
 (*
 # fetch_grid solved_grid_1 3 6 3 3  ;;
 - : int list = [4; 2; 3; 7; 9; 1; 8; 5; 6]
@@ -435,18 +435,18 @@ let rec fetch_grid grid start_row start_col row_count col_count =
 (*
   4c. Write a predicate function that, given a list, verifies that it is some permutation of the sequence:
       1, 2, ..., 9 
-			
+      
       [5 Points]
 *)
 
 let rec verify n lst = match lst with
-												[] ->
-													if (n = 10) then 
-														true
-													else
-														false
-											|	hd :: tl ->
-													hd = n && verify (n + 1) tl
+                        [] ->
+                          if (n = 10) then 
+                            true
+                          else
+                            false
+                      | hd :: tl ->
+                          hd = n && verify (n + 1) tl
 ;; 
 
 let verify_list lst = verify 1 (quicksort (simple_compare) lst);;
@@ -460,27 +460,27 @@ let verify_list lst = verify 1 (quicksort (simple_compare) lst);;
 
 (*
   4d. Finally write a function that checks whether a given sudoku grid has been solved or not
-	
+  
       [10 Points]
 *)
 
 let rec checkRows grid = match grid with
-													[] -> true
-												|	hd :: tl -> verify_list hd && checkRows tl
+                          [] -> true
+                        | hd :: tl -> verify_list hd && checkRows tl
 ;;
 
 let rec checkCols col grid = match col with
-															9 -> true
-														| _ -> verify_list (fetch_column grid col) && checkCols (col + 1) grid
+                              9 -> true
+                            | _ -> verify_list (fetch_column grid col) && checkCols (col + 1) grid
 ;;
 
-let rec checkRegions start_row grid =	match start_row with
-																								9 -> true
-																							|	_ ->
-																								verify_list (fetch_grid grid start_row 0 3 3) &&
-																								verify_list (fetch_grid grid start_row 3 3 3) &&
-																								verify_list (fetch_grid grid start_row 6 3 3) &&
-																								checkRegions (start_row + 3) grid
+let rec checkRegions start_row grid = match start_row with
+                                                9 -> true
+                                              | _ ->
+                                                verify_list (fetch_grid grid start_row 0 3 3) &&
+                                                verify_list (fetch_grid grid start_row 3 3 3) &&
+                                                verify_list (fetch_grid grid start_row 6 3 3) &&
+                                                checkRegions (start_row + 3) grid
 ;;
 
 let verify_grid grid = checkRows grid && checkCols 0 grid && checkRegions 0 grid;;

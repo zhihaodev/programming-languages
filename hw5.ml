@@ -4,8 +4,8 @@
 
 (*
  
-  Name                        :	Zhihao Cao
-  List of team Members        :	Jian Jin
+  Name                        : Zhihao Cao
+  List of team Members        : Jian Jin
   List of other collaborators :
 
 *) 
@@ -18,42 +18,42 @@ type fbtype =
     
 
 let rec is_subtype t1 t2 =
-	if t1 = t2 then
-		true
-	else
-		match (t1, t2) with
-		| (TRecord a, TRecord b) -> 
-			if (List.length a) < (List.length b) then
-				false
-			else
-				scan_record a b
-		| (TArrow (a, b), TArrow (c, d)) ->
-			(is_subtype c a) && (is_subtype b d)
-		| _ -> false
-		  
+    if t1 = t2 then
+        true
+    else
+        match (t1, t2) with
+        | (TRecord a, TRecord b) -> 
+            if (List.length a) < (List.length b) then
+                false
+            else
+                scan_record a b
+        | (TArrow (a, b), TArrow (c, d)) ->
+            (is_subtype c a) && (is_subtype b d)
+        | _ -> false
+          
 and
 
 scan_record r1 r2 =
-	match r2 with
-	| [] -> true
-	| hd :: tl ->
-			if not (check_each_field r1 hd) then
-				false
-			else
-				scan_record r1 tl
+    match r2 with
+    | [] -> true
+    | hd :: tl ->
+            if not (check_each_field r1 hd) then
+                false
+            else
+                scan_record r1 tl
 
 and
 
 check_each_field r pair =
-	match r with
-	| [] -> false
-	| hd :: tl ->
-		let (l1, t1) = hd in
-			let (l2, t2) = pair in
-				if l1 = l2 then
-					is_subtype t1 t2
-				else
-					check_each_field tl pair
+    match r with
+    | [] -> false
+    | hd :: tl ->
+        let (l1, t1) = hd in
+            let (l2, t2) = pair in
+                if l1 = l2 then
+                    is_subtype t1 t2
+                else
+                    check_each_field tl pair
 ;;
 
 

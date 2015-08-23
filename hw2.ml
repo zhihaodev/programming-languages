@@ -59,36 +59,36 @@ let exp3 = fun () -> ();;
 exception Failure;;
 
 let exp4 = fun n -> fun lst -> match lst with
-    							[] -> raise Failure
-  							| hd :: tl -> 
-      						if n = 0 then	
-        						hd
-     							else
-										hd
+                  [] -> raise Failure
+                | hd :: tl -> 
+                  if n = 0 then 
+                    hd
+                  else
+                    hd
 ;; 
 
 
 (* Give an expression which has the following type: 'a list list -> 'a list *)
-let exp5 = fun lst -> match lst with	
- 											[] -> []
-	 									|	hd :: tl -> hd
+let exp5 = fun lst -> match lst with  
+                      [] -> []
+                    | hd :: tl -> hd
 ;;
 
 
 (* Give an expression which has the following type: ('a -> 'b) -> ('a -> 'c) -> 'a list -> ('b * 'c) list *)
 let rec exp6 = fun f g lst -> match lst with
-													[] -> []
-												|	hd :: tl -> 
-													(f hd, g hd) :: exp6 f g tl
+                          [] -> []
+                        | hd :: tl -> 
+                          (f hd, g hd) :: exp6 f g tl
 ;;
 
 
 (* Give an expression which has the following type: 'a list -> 'b list -> ('a -> 'b -> unit) -> unit *)
 let exp7 = fun lst1 lst2 f -> match (lst1, lst2) with
-														([], _) -> ()
-													| (_, []) -> ()
-													|	(hd1 :: tl1, hd2 :: tl2) ->
-															f hd1 hd2 
+                            ([], _) -> ()
+                          | (_, []) -> ()
+                          | (hd1 :: tl1, hd2 :: tl2) ->
+                              f hd1 hd2 
 ;;
 
 
@@ -98,11 +98,11 @@ let exp8 = fun x -> raise Failure;;
 
 
 (* Give an expression which has the following type: ('a -> 'b option) -> ('b -> 'c option) -> 'a -> 'c option *)
-let exp9 = 	fun f g x -> match (f x) with
-													None -> None
-												| Some hd -> g hd
+let exp9 =  fun f g x -> match (f x) with
+                          None -> None
+                        | Some hd -> g hd
 ;;
-										 
+                     
 
 type ('a, 'b) foobar = Foo of 'a | Bar of 'b ;;
 
@@ -110,12 +110,12 @@ type ('a, 'b) foobar = Foo of 'a | Bar of 'b ;;
    ('a, 'b) foobar list -> ('b -> bool) -> ('c, 'b) foobar list
 *)
 let exp10 = fun lst f -> match lst with 
-														[] ->	[]
-													| Foo hd :: tl -> exp8 hd :: []
-													|	Bar hd :: tl -> if f hd then 
-																							Bar hd :: []
-																						else
-																							raise Failure																																																									
+                            [] -> []
+                          | Foo hd :: tl -> exp8 hd :: []
+                          | Bar hd :: tl -> if f hd then 
+                                              Bar hd :: []
+                                            else
+                                              raise Failure                                                                                                                 
 ;;
 
 
@@ -145,12 +145,12 @@ let exp10 = fun lst f -> match lst with
 
 module type GSTACKTYPE =
   sig
-  	type 'a stack  
-		val emptystack : unit -> 'a stack
-		val push : 'a -> 'a stack -> 'a stack
-		val top : 'a stack -> 'a option
-		val pop : 'a stack -> 'a stack		
-		val is_empty : 'a stack -> bool 					                 
+    type 'a stack  
+    val emptystack : unit -> 'a stack
+    val push : 'a -> 'a stack -> 'a stack
+    val top : 'a stack -> 'a option
+    val pop : 'a stack -> 'a stack    
+    val is_empty : 'a stack -> bool                            
   end
 ;;
 
@@ -158,22 +158,22 @@ module type GSTACKTYPE =
 module GStack : GSTACKTYPE =
   struct
     type 'a stack = 'a list
-		
-		let emptystack () : 'a stack = []
-		
-		let push x stack = x :: stack
-		
-		let top stack = match stack with
-											[] -> None
-										|	hd :: tl -> Some hd
-									
-		let pop stack = match stack with
-											[] -> invalid_arg "Empty stack" 
-										| hd :: tl -> tl
-						     
-		let is_empty stack = match stack with
-													[] -> true
-												|	_ -> false
+    
+    let emptystack () : 'a stack = []
+    
+    let push x stack = x :: stack
+    
+    let top stack = match stack with
+                      [] -> None
+                    | hd :: tl -> Some hd
+                  
+    let pop stack = match stack with
+                      [] -> invalid_arg "Empty stack" 
+                    | hd :: tl -> tl
+                 
+    let is_empty stack = match stack with
+                          [] -> true
+                        | _ -> false
   end
 ;;
 
@@ -237,59 +237,59 @@ let rec rev l =
 ;;
 
 let calculate a b op = match ((a : number), (b : number)) with
-												(Int a1, Int b1) -> 
-													(match op with
-														Plus -> Int (a1 + b1)
-													|	Minus -> Int (a1 - b1)
-													|	Mul -> Int (a1 * b1)
-													|	Div -> Int (a1 / b1)
-													| _ -> invalid_arg "Invalid operator" )
-													
-											|	(Int a2, Float b2) ->
-													(match op with
-														Plus -> Float (float a2 +. b2)
-													|	Minus -> Float (float a2 -. b2)
-													|	Mul -> Float (float a2 *. b2)
-													|	Div -> Float (float a2 /. b2)
-													| _ -> invalid_arg "Invalid operator")
-											|	(Float a3, Int b3) ->
-													(match op with
-														Plus -> Float (a3 +. float b3)
-													|	Minus -> Float (a3 -. float b3)
-													|	Mul -> Float (a3 *. float b3)
-													|	Div -> Float (a3 /. float b3)
-													| _ -> invalid_arg "Invalid operator")
-											|	(Float a4, Float b4) ->
-													(match op with
-														Plus -> Float (a4 +. b4)
-													|	Minus -> Float (a4 -. b4)
-													|	Mul -> Float (a4 *. b4)
-													|	Div -> Float (a4 /. b4)	
-													| _ -> invalid_arg "Invalid operator")						
+                        (Int a1, Int b1) -> 
+                          (match op with
+                            Plus -> Int (a1 + b1)
+                          | Minus -> Int (a1 - b1)
+                          | Mul -> Int (a1 * b1)
+                          | Div -> Int (a1 / b1)
+                          | _ -> invalid_arg "Invalid operator" )
+                          
+                      | (Int a2, Float b2) ->
+                          (match op with
+                            Plus -> Float (float a2 +. b2)
+                          | Minus -> Float (float a2 -. b2)
+                          | Mul -> Float (float a2 *. b2)
+                          | Div -> Float (float a2 /. b2)
+                          | _ -> invalid_arg "Invalid operator")
+                      | (Float a3, Int b3) ->
+                          (match op with
+                            Plus -> Float (a3 +. float b3)
+                          | Minus -> Float (a3 -. float b3)
+                          | Mul -> Float (a3 *. float b3)
+                          | Div -> Float (a3 /. float b3)
+                          | _ -> invalid_arg "Invalid operator")
+                      | (Float a4, Float b4) ->
+                          (match op with
+                            Plus -> Float (a4 +. b4)
+                          | Minus -> Float (a4 -. b4)
+                          | Mul -> Float (a4 *. b4)
+                          | Div -> Float (a4 /. b4) 
+                          | _ -> invalid_arg "Invalid operator")            
 ;;
 
 
 let operation stack op = let x = GStack.top stack in
-															let y = GStack.top (GStack.pop stack) in
-															(match (x, y) with
-																(Some a, Some b) -> calculate b a op
-																|	_ -> invalid_arg "Empty stack" )
-;;															
-																
+                              let y = GStack.top (GStack.pop stack) in
+                              (match (x, y) with
+                                (Some a, Some b) -> calculate b a op
+                                | _ -> invalid_arg "Empty stack" )
+;;                              
+                                
 let rec postfix_calculator_stack tokenlist = match (rev tokenlist) with
-																							[] -> GStack.emptystack ()
-																						|	hd :: tl -> 	
-																							(let s = postfix_calculator_stack (rev tl) in
-																								(match hd with
-																									Number n -> GStack.push (n: number) s
-																									| op -> GStack.push (operation s op) (GStack.pop (GStack.pop s))))												
+                                              [] -> GStack.emptystack ()
+                                            | hd :: tl ->   
+                                              (let s = postfix_calculator_stack (rev tl) in
+                                                (match hd with
+                                                  Number n -> GStack.push (n: number) s
+                                                  | op -> GStack.push (operation s op) (GStack.pop (GStack.pop s))))                        
 ;;
 
 
 
 let postfix_calculator tokenlist = match GStack.top (postfix_calculator_stack tokenlist) with
-																		Some x -> x
-																	|	_ ->  invalid_arg "Error"
+                                    Some x -> x
+                                  | _ ->  invalid_arg "Error"
 ;;
 
 
@@ -362,34 +362,34 @@ type 'a trie = Node of 'a option * (char * 'a trie) list ;;
 *)
 
 let rec update_node str value = match String.length str with
-                              	0 -> Node( Some(value),[]) 	
-                              |	_ -> Node( None, [String.get str 0, update_node (String.sub str 1 (String.length str - 1))	value] ) 
+                                0 -> Node( Some(value),[])  
+                              | _ -> Node( None, [String.get str 0, update_node (String.sub str 1 (String.length str - 1))  value] ) 
 ;;
 
 let rec add_to_trie trie str value = match trie with
-                                  	 	Node(v, []) -> 
-																				if String.length str = 0 then 
-																					Node(Some(value), [])
-																				else
-																					Node(v, [(String.get str 0, update_node (String.sub str 1 ((String.length str) - 1)) value)])
-                                  	|	Node(v, lst) -> 
-																				if String.length str = 0 then
-																					Node(Some(value), lst)
-																				else
-																					Node(v, update_list lst str value)
-																				
+                                      Node(v, []) -> 
+                                        if String.length str = 0 then 
+                                          Node(Some(value), [])
+                                        else
+                                          Node(v, [(String.get str 0, update_node (String.sub str 1 ((String.length str) - 1)) value)])
+                                    | Node(v, lst) -> 
+                                        if String.length str = 0 then
+                                          Node(Some(value), lst)
+                                        else
+                                          Node(v, update_list lst str value)
+                                        
 and 
 
 update_list lst str value = match lst with 
-                          	[] -> [ (String.get str 0, update_node (String.sub str 1 ((String.length str) - 1)) value) ]
-                          |	(c, l) :: tl -> 													
-															if c = (String.get str 0) then 																																																																																																								
-																(c, add_to_trie l (String.sub str 1 ((String.length str) - 1)) value) :: tl
-                          		else
-																(c, l) :: (update_list tl str value)
+                            [] -> [ (String.get str 0, update_node (String.sub str 1 ((String.length str) - 1)) value) ]
+                          | (c, l) :: tl ->                           
+                              if c = (String.get str 0) then                                                                                                                                                                                                                
+                                (c, add_to_trie l (String.sub str 1 ((String.length str) - 1)) value) :: tl
+                              else
+                                (c, l) :: (update_list tl str value)
 ;;
 
-	
+  
 (*  
 # let root = Node(None, []) ;;  
 # let trie_1_n1 = add_to_trie (Node(None, [])) "to" 7 ;;
@@ -425,16 +425,16 @@ val trie_1 : int trie =
 *)
 
 let rec get_value_from_trie trie key = match trie with
-                                     	 	Node(value, lst) ->
-																						if (String.length key) = 0 then
-																							value
-																						else if List.mem_assoc (String.get key 0) lst then
-																							get_value_from_trie (List.assoc (String.get key 0) lst ) (String.sub key 1 ((String.length key) - 1))
-																						else
-																							None
-;;																					
-			
-																															
+                                        Node(value, lst) ->
+                                            if (String.length key) = 0 then
+                                              value
+                                            else if List.mem_assoc (String.get key 0) lst then
+                                              get_value_from_trie (List.assoc (String.get key 0) lst ) (String.sub key 1 ((String.length key) - 1))
+                                            else
+                                              None
+;;                                          
+      
+                                                              
 (*
 # get_value_from_trie trie_1 "tea" ;;
 - : int option = Some 3
@@ -476,58 +476,58 @@ type filesystemobject = Directory of string * filesystemobject list | File of st
 *)
 
 let rec check_name fso path = match fso with
-															|	Directory(name, lst) ->
-																	if not (String.contains path '/')	then
-																		name = path
-																	else
-																		name = String.sub path 0 (String.index path '/')
-															|	File(name, lst) ->
-																	if not (String.contains path '/')	then
-																 		name = path
-																	else
-																		name = String.sub path 0 (String.index path '/')
+                              | Directory(name, lst) ->
+                                  if not (String.contains path '/') then
+                                    name = path
+                                  else
+                                    name = String.sub path 0 (String.index path '/')
+                              | File(name, lst) ->
+                                  if not (String.contains path '/') then
+                                    name = path
+                                  else
+                                    name = String.sub path 0 (String.index path '/')
 ;;
 
 let rec is_name_exist lst path = match lst with
-																	[] -> false
-																|	hd :: tl ->  
-																		check_name hd path || is_name_exist tl path
+                                  [] -> false
+                                | hd :: tl ->  
+                                    check_name hd path || is_name_exist tl path
 ;;
-																																																									
+                                                                                                                  
 let cut_path name path =if name = String.sub path 0 (String.index path '/') then
-													String.sub path (String.index path '/' + 1) (String.length path - String.index path '/' - 1)
-												else
-													invalid_arg "Error"
+                          String.sub path (String.index path '/' + 1) (String.length path - String.index path '/' - 1)
+                        else
+                          invalid_arg "Error"
 ;;
 
 let rec search_name lst path = match lst with
-														[] -> invalid_arg "Not found"
-													|	hd :: tl ->
-															if check_name hd path then
-																hd
-															else
-																search_name tl path
+                            [] -> invalid_arg "Not found"
+                          | hd :: tl ->
+                              if check_name hd path then
+                                hd
+                              else
+                                search_name tl path
 ;;
 
 let rec get_filesystemobject root path = match root with
-																				Directory(name, lst) -> 
-																					
-																					if name = "<ROOT>" then
-																						get_filesystemobject (search_name lst path) path
-																					else if check_name root path && not (String.contains path '/') then
-																						root
-																					else if is_name_exist lst (cut_path name path) then
-																						get_filesystemobject (search_name lst (cut_path name path)) (cut_path name path)
-																					else
-																						invalid_arg "Not found"
-																										
-																			| File(name, size) ->
-																					if check_name root path && not (String.contains path '/') then
-																						root	
-																					else
-																						invalid_arg "Not found"																													
-;;	
-																							 
+                                        Directory(name, lst) -> 
+                                          
+                                          if name = "<ROOT>" then
+                                            get_filesystemobject (search_name lst path) path
+                                          else if check_name root path && not (String.contains path '/') then
+                                            root
+                                          else if is_name_exist lst (cut_path name path) then
+                                            get_filesystemobject (search_name lst (cut_path name path)) (cut_path name path)
+                                          else
+                                            invalid_arg "Not found"
+                                                    
+                                      | File(name, size) ->
+                                          if check_name root path && not (String.contains path '/') then
+                                            root  
+                                          else
+                                            invalid_arg "Not found"                                                         
+;;  
+                                               
  
 (*
 # let filesystem = 
@@ -573,56 +573,56 @@ Exception: Not_found.
 *)
 
 let get_name fobj = match fobj with
-											Directory(name, lst) -> name
-										|	File(name, size) -> name
+                      Directory(name, lst) -> name
+                    | File(name, size) -> name
 ;;
 
-let add_prefix fobj prefix =	if prefix = "<ROOT>" then
-																fobj
-															else 
-    														match fobj with
-    															Directory(name, lst) -> Directory(String.concat "/" [prefix; name], lst)
-    														|	File(name, size) -> File(String.concat "/" [prefix; name], size)
+let add_prefix fobj prefix =  if prefix = "<ROOT>" then
+                                fobj
+                              else 
+                                match fobj with
+                                  Directory(name, lst) -> Directory(String.concat "/" [prefix; name], lst)
+                                | File(name, size) -> File(String.concat "/" [prefix; name], size)
 ;;
-																																	
+                                                                  
 let rec push_list_to_stack stack lst prefix = match lst with
-            																		[] ->	stack 	
-            																	|	hd :: tl -> 
-            																			let s = push_list_to_stack stack tl prefix in																		
-            																				GStack.push (add_prefix hd prefix) s
-;; 	
-							
+                                                [] -> stack   
+                                              | hd :: tl -> 
+                                                  let s = push_list_to_stack stack tl prefix in                                   
+                                                    GStack.push (add_prefix hd prefix) s
+;;  
+              
 
 let convert_option x = match x with
-												None -> invalid_arg "Error"
-											|	Some n -> n			
-;;																																			
+                        None -> invalid_arg "Error"
+                      | Some n -> n     
+;;                                                                      
 
 let compare path name = if not (String.contains path '/') then
-														path = name
-												else
-  												let i = String.rindex path '/' in
-  													String.sub path (i + 1) (String.length path - i - 1) = name
-;; 																																																																																																																																																																																																																																
-																															
+                            path = name
+                        else
+                          let i = String.rindex path '/' in
+                            String.sub path (i + 1) (String.length path - i - 1) = name
+;;                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                                                              
 let rec get_path_stack fobj stack = if GStack.is_empty stack then
-      																invalid_arg "Not found"
-      															else
-        															let node = convert_option (GStack.top stack) in
-          															if compare (get_name node) (get_name fobj) then
-          																get_name node
-          															else
-																					
-          																match node with
-          																	Directory(name, lst) ->
-          																		get_path_stack fobj (push_list_to_stack (GStack.pop stack) lst (get_name node)) 
-          																|	File(name, size) ->
-          																		get_path_stack fobj (GStack.pop stack)
-;;		
+                                      invalid_arg "Not found"
+                                    else
+                                      let node = convert_option (GStack.top stack) in
+                                        if compare (get_name node) (get_name fobj) then
+                                          get_name node
+                                        else
+                                          
+                                          match node with
+                                            Directory(name, lst) ->
+                                              get_path_stack fobj (push_list_to_stack (GStack.pop stack) lst (get_name node)) 
+                                          | File(name, size) ->
+                                              get_path_stack fobj (GStack.pop stack)
+;;    
 
-let get_path fobj root = get_path_stack fobj (GStack.push root (GStack.emptystack ())	) ;;																												
-													
-																																			
+let get_path fobj root = get_path_stack fobj (GStack.push root (GStack.emptystack ()) ) ;;                                                        
+                          
+                                                                      
 
 (*
 (* -- Wherein we test whether the universe is circular -- *)
@@ -653,21 +653,21 @@ let get_path fobj root = get_path_stack fobj (GStack.push root (GStack.emptystac
 *)
 
 let rec visit_list lst = match lst with
-													[] -> []
-												|	hd :: tl -> 
-														match hd with
-							 								Directory(name, lst2) -> (visit_list lst2) @ [hd] @ (visit_list tl) 
-														|	File(name, size) -> visit_list tl
+                          [] -> []
+                        | hd :: tl -> 
+                            match hd with
+                              Directory(name, lst2) -> (visit_list lst2) @ [hd] @ (visit_list tl) 
+                            | File(name, size) -> visit_list tl
 ;;
 
 let vist_node fobj = match fobj with 
-											Directory(name, lst) -> (visit_list lst) @ [fobj]
-										|	File(name, size) -> []
+                      Directory(name, lst) -> (visit_list lst) @ [fobj]
+                    | File(name, size) -> []
 ;;
 
 let rec walk_nodes f init lst = match lst with
- 													[] -> init
-												| hd :: tl -> walk_nodes f (f init hd) tl
+                          [] -> init
+                        | hd :: tl -> walk_nodes f (f init hd) tl
 ;;
 
 let rec process_filesystem_in_postorder f init root = walk_nodes f init (vist_node root);;
@@ -728,34 +728,34 @@ Ode - 1400
 *) 
 
 let rec update_list predicate lst = match lst with
-																		[] ->	[]
-																	|	hd :: tl ->
-																		let newhd = update_node2 predicate hd in
-																			match newhd with
+                                    [] -> []
+                                  | hd :: tl ->
+                                    let newhd = update_node2 predicate hd in
+                                      match newhd with
 
-																				Directory("", _) -> update_list predicate tl
-																			|	Directory(_, _) -> newhd :: (update_list predicate tl)
-																			| File(_, 0) ->	update_list predicate tl
-																			| File(_, _) -> newhd :: (update_list predicate tl)
-																
-	and
+                                        Directory("", _) -> update_list predicate tl
+                                      | Directory(_, _) -> newhd :: (update_list predicate tl)
+                                      | File(_, 0) -> update_list predicate tl
+                                      | File(_, _) -> newhd :: (update_list predicate tl)
+                                
+  and
 
-	update_node2 predicate root = match root with
-																			Directory(name, lst) ->
-																				if predicate root then
-																					Directory(name, (update_list predicate lst))	
-																				else
-																					Directory("", [])
-																		|	File(name, size) ->
-																				if predicate root then
-																					root
-																				else
-																					File(name, 0)																																																																								
-	;;
+  update_node2 predicate root = match root with
+                                      Directory(name, lst) ->
+                                        if predicate root then
+                                          Directory(name, (update_list predicate lst))  
+                                        else
+                                          Directory("", [])
+                                    | File(name, size) ->
+                                        if predicate root then
+                                          root
+                                        else
+                                          File(name, 0)                                                                                                                                               
+  ;;
 
 let find_files predicate root = match root with
-																	Directory(name, lst) -> Directory(name, update_list predicate lst)
-																|	File(_, _) -> root
+                                  Directory(name, lst) -> Directory(name, update_list predicate lst)
+                                | File(_, _) -> root
 ;;
 
 
@@ -817,20 +817,20 @@ let new_cached_fun f = (f, ref []);;
 *)
 
 let rec contains x lst = match lst with
-												[] -> []
-											|	(f, _) :: tl -> 
-												if f = x then 
-													lst 
-												else 
-													contains x tl											
+                        [] -> []
+                      | (f, _) :: tl -> 
+                        if f = x then 
+                          lst 
+                        else 
+                          contains x tl                     
 ;;
 
 let apply_fun_with_cache cached_fn x = let (f, lst) = cached_fn in
-	                                    		match (contains x !lst) with 
-																						[] ->
-																							lst := (x, f x) :: (!lst);
-																				 	   	f x        
-																		 			|	(func, l) :: tl -> l 
+                                          match (contains x !lst) with 
+                                            [] ->
+                                              lst := (x, f x) :: (!lst);
+                                              f x        
+                                          | (func, l) :: tl -> l 
 ;;
 
 (*
