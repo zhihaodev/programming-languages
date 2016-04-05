@@ -1,0 +1,269 @@
+600.426 - Principles of Programming Languages
+Spring 2015
+Take Home Midterm
+
+----------------------------------------------------------------------------------------
+INSTRUCTIONS
+----------------------------------------------------------------------------------------
+
+This is a Take Home Midterm and as such operates on different rules
+from your regular assignments. You are expected to work on solving
+these problems by yourself. You are encouraged to talk to the TAs/Prof
+in office hours if you are stuck. You may discuss general concepts
+with others but you are NOT allowed to discuss the particular
+questions with anyone other than the Prof/TAs.
+
+----------------------------------------------------------------------------------------
+HEADER: PLEASE FILL THIS IN
+----------------------------------------------------------------------------------------
+
+Name : Zhihao Cao
+
+----------------------------------------------------------------------------------------
+Questions
+----------------------------------------------------------------------------------------
+
+1. [10 points] The operational semantics for FbX included various rules to
+    "bubble" up any exception raised.  Briefly outline how the bubbling rules
+    could be implemented in a FbX extension to your Fb interpreter written in
+    OCaml.  Note that pseudocode is fine, and you can say e.g. "- is similar to
+    +" etc for cases that are clearly analogous.  You also need not define how
+    Try or Raise are interpreted for this question, you can assume there are
+    interpreter clauses for them that meet the operational semantics
+    specification.
+
+
+exception TypeMismatch;;
+
+let rec eval e = if isclosed(e) then
+  match e with
+    Int(_) | Bool(_) -> e
+  | Plus (e1, e2) -> 
+    ( match eval e1 with
+        Raise(xn, v) -> Raise(xn, v)
+      | Int x ->
+          match eval e2 with
+            Raise(xn, v) -> Raise(xn, v)
+          | Int y -> Int (x + y) 
+          | _ -> raise TypeMismatch 
+      | _ -> raise TypeMismatch )
+
+  (* Minus, And, Or, Equal are all implemented analogous to Plus *)
+
+  | Not e ->
+    ( match eval e with
+        Raise(xn, v) -> Raise(xn, v)
+      | Bool x -> Bool (not x)
+      | _ -> raise TypeMismatch )
+
+  | If (e1, e2, e3) -> 
+    ( match eval e1 with
+        Raise(xn, v) -> Raise(xn, v)
+      | Bool true -> eval e2
+      | Bool false -> eval e3 )
+
+  | Appl (e1, e2) ->
+      ( match eval e1 with
+          Raise(xn, v) -> Raise(xn, v)
+        | Function (ident, expr) ->
+          ( match eval e2 with
+              Raise(xn, v) -> Raise(xn, v)
+            | e -> eval (subst expr e ident)
+        | _ -> raise TypeMismatch ) 
+
+  | LetRec (f, x, e1, e2) ->  
+        eval (subst e2 (Function (x, subst e1 (  LetRec (f, x, e1, Var f)  ) f)) f)  
+
+  (* assume Try and Raise are defined properly *)
+
+
+
+
+2. [15 Points]
+
+   So far all of the questions we have asked about what is operationally
+   equivalent to what are based on your understanding of the definition.  This
+   definition is the mathematical *model* of operational equivalence.  For both
+   program and typing we gave a *proof theoretic* meaning instead, a set of
+   axioms and rules for proving facts.  We can in fact also play the "proof"
+   game for operational equivalences: in the book Section 2.4.2 there are
+   several equivalences listed that are known to hold for Fb programs.  So for
+   example, "(Function x -> e) ∼= (Function z -> (Function x -> e) z)",
+   so-called eta-equivalence, is one such known fact.  This particular principle
+   is an axiom, there are no preconditions on it.
+
+   a. Going through definitions 2.16 through 2.25, which are axioms (no
+   preconditions) and which are (non-axiom) rules?  They are not written as
+   rules with a horizontal line but it should be evident from the statements
+   which is which.
+
+   Definitions 2.16, 2.21, 2.22, 2.23, 2.24 are axioms, and definitions 2.17, 2.18, 2.19, 2.20, 2.25 are rules.
+
+
+
+   b. Make a proof tree showing the following fact only using these axioms and proof rules:
+
+           Function x -> ((Function y -> x + y) 5) =~ Function x -> x + 5
+
+  Proof. 
+          (Function y -> x + y) 5 =~ x + 5 by Beta-Equivalence(2.20)
+          Function x -> ((Function y -> x + y) 5) =~ Function x -> x + 5 by Congruence(2.19, letting C be Function x -> *)
+  QED.
+   
+
+   c. As for b. but show
+
+          (Function n -> 6) =~ (Function w -> (Function x -> If 0 = 0 Then 6 Else x) w)
+
+  Proof.
+          (Function n -> 6) =~ (Function x -> 6) by Alpha-Equivalence(2.22)
+          (Function x -> 6) =~ (Function w -> (Function x -> 6) w) by Eta-Equivalence(2.21)
+          (0 = 0) =~ True by 0 = 0 => True and definition 2.25
+          (If True Then 6 Else x) =~ 6 by definition 2.24
+          (Function w -> (Function x -> If 0 = 0 Then 6 Else x) w) =~ (Function w -> (Function x -> If True Then 6 Else x) w) by Congruence(2.19, letting C be (Function w -> (Function x -> If * Then 6 Else x) w)  )
+          (Function w -> (Function x -> If True Then 6 Else x) w) =~ (Function w -> (Function x -> 6) w) by Congruence(2.19, letting C be (Function w -> (Function x -> *) w)  )
+          (Function n -> 6) =~ (Function w -> (Function x -> If 0 = 0 Then 6 Else x) w) by applying Transitivity(2.18) and Symmetry(2.17) multiple times
+  QED.
+
+
+   If you are having trouble getting your head around b./c., here is an example.  
+   Theorem.  1 + (Function x -> x) 4 =~ 5.
+   Proof.
+         (Function x -> x) 4 =~ 4 by beta (2.20) so
+         1 + (Function x -> x) 4 =~ 1 + 4 by  congruence (2.19, letting C be  1 + hole) and
+         1 + 4 =~ 5 by 2.23, so
+         1 + (Function x -> x) 4 =~ 5 by transitivity between the two previous assertions.
+   QED.
+
+
+
+3.  [15 Points]
+
+In a recent Piazza discussion about the definition of operational equivalence it
+became clear that mathematics has some problems expressing partial
+functions/relations - to be technically accurate you need to make sure each
+function is only applied on elements for which the function is defined,
+otherwise it has no meaningful result.
+
+In programming we can deal with exceptional behavior more elegantly, by use of
+*exceptions*.  For this question, we want you to write some FbX macros which
+make it easy for programmers to define and deal with partial functions.
+
+ - Assume there is a macro Undef which expands to Raise #Undefined 0 which is
+   used to indicate a value is out of the domain of a function.  For example:
+
+  posDouble = Fun x -> If x < 0 Then Undef Else x + x
+
+  is defining a partial function on positive integers only.
+  
+ a.  Write a macro isDef(e,e') which assumes e (computes to) a function and e'
+ is its argument and returns True if the function is well-defined on input e',
+ and False if it is not (i.e. it raises Undefined).  e and e' can be arbitrary
+ expressions; make sure that you are only looking for Undef inside the *body* of
+ the function that e computes to, not in e.g. some function call that could in
+ theory be in the argument e'.
+
+ For example, isDef(posDouble,0-3) should return False.
+
+isDef(e, e') =def= (Function f -> Try ((Function n -> True) (e f)) With #Undefined x -> False ) e'
+
+
+ b. isDef has a nasty "side effect" in the presence of state: discuss how isDef
+ could produce unexpected behavior in FbSX.
+
+isDef may change the value of e', so it could be the case that isDef(e, e') = True for the first time and isDef(e, e') = False for the 
+second time, which is an unexpected behavior.
+For example:
+Let  a = Ref 2 In
+  Let f = Fun x -> If !x < 0 Then Undef Else x := !x - 10 In
+    isDef(f, a)
+;;
+
+The above result is True, but the following will return False(I use ; directly here for convenience):
+Let  a = Ref 2 In
+  Let f = Fun x -> If !x < 0 Then Undef Else x := !x - 10 In
+    isDef(f, a); isDef(f, a)
+;;
+
+
+
+ c. One advantage of this exception-based view of partiality is how a function f
+ that in turn invokes a partial function p on a value out of its domain
+ implicitly becomes a partial function itself.  Give a concrete example of such
+ a function f invoking some concrete p and how isDef(f,e) will correctly compute
+ that it is partial for some e.
+ 
+Let p = Fun x -> If x < 0 Then Undef Else x + x
+In
+Let f = Fun x -> p x 
+In
+isDef(f, 5)
+;;
+
+Let p = Fun x -> If x < 0 Then Undef Else x + x
+In
+Let f = Fun x -> p x 
+In
+isDef(f, -1)
+;;
+
+p is the same as posDouble, a partial function on positive integers only, and f invokes p.
+For the above example, isDef(f, 5) will correctly return True since 5 is positive, and isDef(f, -1) will correctly return False
+since -1 is negative, so function f is partial for some e indeed.
+
+
+4.  [8 Points] Give proof trees demonstrating that the following expressions typecheck in TFb.
+
+     a. Fun x: Int -> If x = 0 Then 0 Else 1
+
+
+      x: Int ⊢ x: Int,  x: Int ⊢ 0: Int
+      ----------------------------------
+          x: Int ⊢ x = 0 : Bool,          x: Int ⊢ 0: Int,   x: Int ⊢ 1: Int      
+     -------------------------------------------------------------------------
+                        x: Int ⊢ If x = 0 Then 0 Else 1 : Int
+     -------------------------------------------------------------------------
+           ⊢ (Fun x: Int -> If x = 0 Then 0 Else 1) : Int -> Int
+
+
+     b. (Fun f: (Int -> Int) -> (f 4) + 1)(Fun x: Int -> If x = 0  Then 0 Else 1)
+
+
+     f: (Int -> Int) ⊢ f: (Int -> Int),   f: (Int -> Int) ⊢ 4 : Int
+    ----------------------------------------------------------------
+                   f: (Int -> Int) ⊢ (f 4) : Int,                          f: (Int -> Int) ⊢ 1 : Int
+    -------------------------------------------------------------------------------------------------
+                                    f: (Int -> Int) ⊢ (f 4) + 1 : Int                                         4 a.
+                      -----------------------------------------------------------   ------------------------------------------------------            
+                      ⊢ (Fun f: (Int -> Int) -> (f 4) + 1) : (Int -> Int) -> Int,   ⊢ (Fun x: Int -> If x = 0  Then 0 Else 1) : Int -> Int
+                      --------------------------------------------------------------------------------------------------------------------
+                                  ⊢ (Fun f: (Int -> Int) -> (f 4) + 1)(Fun x: Int -> If x = 0  Then 0 Else 1) -> Int
+
+  
+5.  [5 Points]  This question concerns STFb subtyping. Write a subtype of the following type:
+
+( {x : Int} -> {x : {x:Int; y:Int}} ) -> {x:Int; y: Int; z:Int}
+
+where none of the component-record types of your subtype should be identical to
+the corresponding record types of the above type (this condition is added becase
+the type is a subtype of itself but we don't want that answer).  Show your work:
+give the full proof tree using the subtyping rules for STFb.
+
+
+                                                     Int <: Int
+                                             ----------------------------
+           Int <: Int                        {x:Int; y:Int} <: {x : Int}
+---------------------------------     ---------------------------------------
+{x : Int, y : Int} <: {x : Int}       {x : {x:Int; y:Int}} <: {x : {x : Int}}                 Int <: Int, Int <: Int, Int <: Int
+---------------------------------------------------------------------------------   ---------------------------------------------------------
+( {x : Int} -> {x : {x:Int; y:Int}} ) <: {x : Int, y : Int} -> {x : {x : Int}}      {x:Int; y: Int; z:Int, a: Int}  <: {x:Int; y: Int; z:Int}  
+----------------------------------------------------------------------------------------------------------------------------------------------
+{x : Int, y : Int} -> {x : {x : Int}} -> {x:Int; y: Int; z:Int, a: Int} <: ( {x : Int} -> {x : {x:Int; y:Int}} ) -> {x:Int; y: Int; z:Int}
+
+Therefore {x : Int, y : Int} -> {x : {x : Int}} -> {x:Int; y: Int; z:Int, a: Int} is the subtype of ( {x : Int} -> {x : {x:Int; y:Int}} ) -> {x:Int; y: Int; z:Int}.
+
+
+     
+
+  
+
